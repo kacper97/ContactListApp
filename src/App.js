@@ -1,4 +1,4 @@
-    import React from 'react';
+ import React from 'react';
     import api from './test/stubAPI.js'
     import buttons from './config/buttonsConfig.js'
 
