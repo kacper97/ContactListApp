@@ -32,5 +32,13 @@ exports.update = function(req, res) {
 
 // Deletes a customer from datastore.
 exports.destroy = function(req, res) {
-       // TODO
+       var elements = _.remove(datastore.contacts , 
+               function(contact) {
+                  return contact.id == req.params.id;
+            });  
+         if (elements.length == 1) {
+            return res.sendStatus(200);
+          } else {
+             return res.sendStatus(404);
+          }
 };
