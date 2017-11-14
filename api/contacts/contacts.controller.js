@@ -3,7 +3,7 @@ var datastore = require('../datastore');
 
 // Get all contacts
 exports.index = function(req, res) {
-    // TODO
+    return res.status(200).json(datastore.contacts);
 } ;
 
 // Creates a new contact in datastore.
