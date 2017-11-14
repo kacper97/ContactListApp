@@ -27,10 +27,19 @@ exports.create = function(req, res) {
 
 // Update an existing contact in datastore.
 exports.update = function(req, res) {
-      // TODO
+      var index = _.findIndex(datastore.contacts, function(contact) {
+           return contact.phone_number == req.params.id;
+        } );      
+      if (index !== -1) {
+          datastore.contacts.splice(index, 1, 
+               {name: req.body.name, address: req.body.address , 
+                         phone_number: req.body.phone_number });
+          return res.sendStatus(200);
+        } 
+      return res.sendStatus(404) ;
 };
 
-// Deletes a customer from datastore.
+// Deletes a contact from datastore.
 exports.destroy = function(req, res) {
        var elements = _.remove(datastore.contacts , 
                function(contact) {
