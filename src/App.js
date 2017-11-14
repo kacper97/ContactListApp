@@ -1,6 +1,7 @@
  import React from 'react';
-    import api from './test/stubAPI.js'
-    import buttons from './config/buttonsConfig.js'
+    import api from './test/stubAPI';
+    import buttons from './config/buttonsConfig';
+    import request from 'superagent';
 
     class ContactForm extends React.Component {
       state = {
@@ -48,113 +49,99 @@
       }
     }
 
-       class Contact extends React.Component {
-         state = {
+    class Contact extends React.Component {
+      state = {
+        status : '',
+        name: this.props.contact.name,
+        address : this.props.contact.address,
+        phone_number : this.props.contact.phone_number
+      };
+
+      handleEdit = () => this.setState({status : 'edit'});
+
+      handleSave = (e) => {
+        e.preventDefault();
+        let name = this.state.name.trim();
+        let address = this.state.address.trim();
+        let phone_number = this.state.phone_number.trim();
+        if(!name || !address || !phone_number){
+          return;
+        }
+        this.setState({status : ''})
+        this.props.updateHandler(this.props.contact.phone_number,name,address,phone_number);
+      };
+
+      handleCancel = function(){
+        this.setState({
           status : '',
           name: this.props.contact.name,
           address: this.props.contact.address,
-          phone_number: this.props.contact.phone_number
-        };
+          phone_number : this.props.contact.phone_number
+        });
+      }.bind(this);
 
+      handleNameChange = (e) => this.setState({name : e.target.value});
 
-          handleEdit = () =>  this.setState({ status : 'edit'} );
+      handleAddressChange = (e) => this.setState({address : e.target.value});
 
-          handleSave = (e) => {
-          e.preventDefault();
-          let name = this.state.name.trim();
-          let address = this.state.address.trim();
-          let phone_number = this.state.phone_number.trim();
-          if (!name || !address || !phone_number) {
-          return;
-          }
-            this.setState({status : ''} )
-             this.props.updateHandler(this.props.contact.phone_number,
-               name,address,phone_number);
-            };                  
+      handlePhoneNumChange = (e) => this.setState({phone_number: e.target.value});
 
-          handleCancel = function() {
-              this.setState({ status : '', 
-                    name: this.props.contact.name,
-                    address: this.props.contact.address,
-                    phone_number: this.props.contact.phone_number} ) ;
-          }.bind(this);    // Alternative to arrow function
+      handleDelete = () => this.setState({status : 'delete'});
 
-          handleNameChange = (e) =>  this.setState({name: e.target.value});
+      handleUndo = () => this.setState({status : ''})
 
-          handleAddressChange = (e) => this.setState({address: e.target.value});
+      handleConfirm = (e) => {
+        e.preventDefault();
 
-          handlePhoneNumChange = (e) =>  this.setState({phone_number: e.target.value});
+        this.setState({status : ''})
+        this.props.deleteHandler(this.props.contact.phone_number)
+      }
 
-          handleDelete = () =>  this.setState({ status : 'delete'} );
+      render() {
+        let activeButtons = buttons.normal;
+        let leftButtonHandler = this.handleEdit;
+        let rightButtonHandler = this.handleDelete;
+        let fields = [
+          <td key={'name'} >{this.state.name}</td>,
+          <td key={'address'} > {this.state.address}</td>,
+          <td key={'phone_number'}>{this.state.phone_number}</td>
+        ];
+        if(this.state.status === 'edit'){
+          activeButtons = buttons.edit;
+          leftButtonHandler = this.handleSave;
+          rightButtonHandler = this.handleCancel;
+          fields = [
+            <td key={'name'}><input type='text' className='form-control' value={this.state.name} onChange={this.handleNameChange}/></td>,
+            <td key={'address'}><input type='text' className='form-control' value={this.state.address} onChange={this.handleAddressChange}/></td>,
+            <td key={'phone_number'}><input type='text' className='form-control' value={this.state.phone_number} onChange={this.handlePhoneNumChange}/></td>
+          ];
+        }
+        if(this.state.status === 'delete'){
+          activeButtons = buttons.delete;
+          leftButtonHandler = this.handleUndo;
+          rightButtonHandler = this.handleConfirm;
+        }
+          return (
+            <tr >
+              {fields}
+              <td>
+                 <input type="button" className={'btn ' + activeButtons.leftButtonColor} value={activeButtons.leftButtonVal} onClick={leftButtonHandler}/>
+              </td>  
+              <td>
+                 <input type="button" className={'btn ' + activeButtons.rightButtonColor} value={activeButtons.rightButtonVal} onClick={rightButtonHandler}/>
+              </td>                      
+          </tr>
 
-          handleUndo = () => this.setState({status: ''});
-
-          handleConfirm = (e) => {
-             e.preventDefault();
-
-              this.setState({status : ''})
-              this.props.deleteHandler(this.props.contact.phone_number)
-              }
-
-         render() {
-             let activeButtons = buttons.normal ;
-             let leftButtonHandler = this.handleEdit ;
-             let rightButtonHandler = this.handleDelete ;
-             let fields = [
-                     <td key={'name'} >{this.state.name}</td>,
-                      <td key={'address'}>{this.state.address}</td>,
-                      <td key={'phone_number'}>{this.state.phone_number}</td>
-                   ] ; 
-
-                   if (this.state.status === 'edit' ) {
-                   activeButtons = buttons.edit ;
-                   leftButtonHandler = this.handleSave;
-                   rightButtonHandler = this.handleCancel ;
-                   fields = [
-                      <td key={'name'}><input type="text" className="form-control"
-                         value={this.state.name}
-                         onChange={this.handleNameChange} /> </td>,
-                      <td key={'address'}><input type="text" className="form-control"
-                         value={this.state.address}
-                         onChange={this.handleAddressChange} /> </td>,
-                      <td key={'phone_number'}><input type="text" className="form-control"
-                         value={this.state.phone_number}
-                         onChange={this.handlePhoneNumChange} /> </td>,
-                   ] ;
-               }  
-
-                        if (this.state.status === 'delete'){
-                          activeButtons = buttons.delete ;
-                          leftButtonHandler = this.handleUndo ;
-                          rightButtonHandler = this.handleConfirm;
-                          fields = [
-                          ]
-                        }
-              return (
-                    <tr >
-                      {fields}
-                      <td>
-                          <input type="button" className={'btn ' + activeButtons.leftButtonColor} 
-                                 value={activeButtons.leftButtonVal}
-                                 onClick={leftButtonHandler} />
-                      </td>
-                      <td>
-                         <input type="button" className={'btn ' + activeButtons.rightButtonColor} 
-                               value={activeButtons.rightButtonVal} 
-                               onClick={rightButtonHandler} />
-                      </td>
-                      </tr>
-                   ) ; 
-          }
+            ) ;
+        }
     }
 
     class ContactList extends React.Component {
       render() {
-           let contactRows =   this.props.contacts.map( (c) => {
-              return <Contact key={c.phone_number} contact={c} 
-                    updateHandler={this.props.updateHandler} deleteHandler={this.props.deleteHandler} addHandler={this.props.addHandler}/> ; 
-              });
-                
+        let contactRows = this.props.contacts.map( (c) => {
+          return <Contact key={c.phone_number} contact={c}
+          updateHandler={this.props.updateHandler} deleteHandler={this.props.deleteHandler} addHandler={this.props.addHandler}/>
+        })
           return (
               <tbody >
                   {contactRows}
@@ -180,41 +167,107 @@
                   </tr>
                 </thead>
                   <ContactList contacts={this.props.contacts} 
-                  updateHandler ={this.props.updateHandler} 
-                  deleteHandler ={this.props.deleteHandler} 
-                  addHandler ={this.props.addHandler}/>
+                    updateHandler={this.props.updateHandler}
+                    deleteHandler={this.props.deleteHandler} 
+                    addHandler={this.props.addHandler}/>
             </table>
             );
       }
     }
 
     class ContactsApp extends React.Component {
-      updateContact = (key, n, a, p) => {
-            api.update(key,n,a,p); 
-            this.setState({}); 
+      componentDidMount(){
+        request.get('http://localhost:3000/api/contacts').end((error, res) =>{
+          if(res){
+            let contacts = JSON.parse(res.text);
+            api.initialize(contacts);
+            localStorage.clear();
+            localStorage.setItem('contacts', JSON.stringify(contacts));
+            this.setState({});
+          }else{
+            console.log(error)
           }
-
-      deleteContact = (key, n, a, p) => {
-        api.delete(key,n, a,p);
-        api.update;
-        this.setState({});
-        }
-
-      addContact =(key,n,a,p) => {
-        api.add(n,a,p);
-        api.update;
-        this.setState({});
+        })
       }
-    
+
+      updateContact = (key,n,a,p) => {
+        request.put('http://localhost:3000/api/contacts/' + key)
+        .send({name: n, address: a, phone_number: p})
+        .set('Content-Type', 'application/json')
+        .end((err,res) => {
+          if(err || !res.ok){
+            alert('Error updating');
+          }else{
+            api.update(key, n,a,p)
+            .then(response => {
+              return api.getAll()
+            })
+            .then(response => {
+              localStorage.clear();
+              localStorage.setItem('contacts', JSON.stringify(response));
+              this.setState({});
+            })
+            .catch(error => {console.log(`Update failed for ${error}`)})
+          }
+        })
+      };
+
+      deleteContact = (k) => {
+        request.del('http://localhost:3000/api/contacts/' + k)
+        .end((err, res) => {
+          if(err || !res.ok){
+            alert('Error deleting contact');
+          }else{
+            api.delete(k)
+            .then (response => {
+              return api.getAll()
+            })
+            .then( response => {
+              localStorage.clear();
+              localStorage.setItem('contacts', JSON.stringify(response));
+              this.setState({});
+            });
+          }
+        })
+      }
+
+      addContact = (k,n,a,p) => {
+        request.post('http://localhost:3000/api/contacts').send({
+          name: n,
+          address: a,
+          phone_number: p
+        }).set('Content-Type', 'application/json')
+        .end((err, res) => {
+          if(err || !res.ok){
+            alert('Error adding contact');
+          }else{
+            let newContact = JSON.parse(res.text);
+            api.add(newContact.name,
+            newContact.address,
+            newContact.phone_number
+          )
+        .then(response => {
+          return api.getAll()
+        })
+        .then( response => {
+          localStorage.clear();
+          localStorage.setItem('contacts', JSON.stringify(response));
+          this.setState({});
+        });
+          }
+        })
+      }
+      
       render() {
-          var contacts =api.getAll();
+        let contacts = localStorage.getItem('contacts') ?
+          JSON.parse(localStorage.getItem('contacts')) : [];
           return (
                 <div>
                    <h1>Contact List.</h1>
-                   <ContactsTable contacts={contacts}
-                      updateHandler={this.updateContact}
-                      deleteHandler={this.deleteContact}  
-                      addHandler={this.addContact} />
+                   <ContactsTable contacts={contacts} 
+                    updateHandler={this.updateContact}
+                    deleteHandler={this.deleteContact}
+                    addHandler={this.addContact} />
                 </div>
           );
       }
