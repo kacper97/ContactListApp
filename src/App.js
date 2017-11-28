@@ -2,6 +2,7 @@ import React from 'react';
  import api from './test/stubAPI.js'  // NEW
  import buttons from './config/buttonsConfig';
   import request from 'superagent' ; 
+  
  
     class ContactForm extends React.Component {
        state = {
