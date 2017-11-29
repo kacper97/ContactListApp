@@ -1,9 +1,8 @@
-import React from 'react';
+ import React from 'react';
  import api from './test/stubAPI.js'  // NEW
  import buttons from './config/buttonsConfig';
   import request from 'superagent' ; 
-  
- 
+
     class ContactForm extends React.Component {
        state = {
           name: this.name,
@@ -18,19 +17,19 @@ import React from 'react';
         if (!name || !address || !phone_number) {
           return;
         }
-       
+      
         this.props.addHandler(name,address,phone_number);
           this.setState({name: '', address: '', phone_number: ''})
       };
- 
+
        handleNameChange = (e) =>  this.setState({name: e.target.value});
- 
+
        handleAddressChange = (e) => this.setState({address: e.target.value});
- 
+
        handlePhoneNumChange = (e) =>  this.setState({phone_number: e.target.value});
- 
+
       render() {
-         
+        
         return (
           <tr>
             <td >
@@ -47,7 +46,7 @@ import React from 'react';
             </td>
             <td>
             <input type="button" onClick={this.handleAdd} className="btn btn-primary" value="Add"/>
- 
+
             </td>
           </tr>
           )
@@ -62,7 +61,7 @@ import React from 'react';
           phone_number: this.props.contact.phone_number
         };
         handleEdit = () =>  this.setState({ status : 'edit'} );
- 
+
           handleSave = (e) =>  {
         e.preventDefault();
         let name = this.state.name.trim();
@@ -72,34 +71,33 @@ import React from 'react';
           return;
         }
         this.setState({status : ''} )
-        this.props.updateHandler(this.props.contact.phone_number,
+         this.props.updateHandler(this.props.contact._id,
                  name,address,phone_number);
       };                 
- 
+
           handleCancel = function() {
               this.setState({ status : '', 
                     name: this.props.contact.name,
                     address: this.props.contact.address,
                     phone_number: this.props.contact.phone_number} ) ;
           }.bind(this);    // Alternative to arrow function
- 
+
           handleNameChange = (e) =>  this.setState({name: e.target.value});
- 
+
           handleAddressChange = (e) => this.setState({address: e.target.value});
- 
+
           handlePhoneNumChange = (e) =>  this.setState({phone_number: e.target.value});
- 
+
            handleDelete = () =>  this.setState({ status : 'delete'} );
- 
+
            handleUndo = (e) => this.setState({status:''});
- 
-           handleConfirm= (e) => {
-            this.setState({status : ''});
-            this.props.deleteHandler(this.props.contact.phone_number);
-           };
- 
-            
- 
+
+           handleConfirm = (e) => { 
+          this.props.deleteHandler(this.props.contact._id) ;
+      };
+
+           
+
         render() {
       let activeButtons = buttons.normal ;
              let leftButtonHandler = this.handleEdit ;
@@ -109,7 +107,7 @@ import React from 'react';
                       <td key={'address'}>{this.state.address}</td>,
                       <td key={'phone_number'}>{this.state.phone_number}</td>
                    ] ; 
- 
+
                    if (this.state.status === 'edit' ) {
                    activeButtons = buttons.edit ;
                    leftButtonHandler = this.handleSave;
@@ -126,7 +124,7 @@ import React from 'react';
                          onChange={this.handlePhoneNumChange} /> </td>,
                    ] ;
                } ;   
- 
+
                if (this.state.status === 'delete' ) {
                    activeButtons = buttons.delete ;
                    leftButtonHandler = this.handleUndo;
@@ -137,7 +135,7 @@ import React from 'react';
                       <td key={'phone_number'}>{this.state.phone_number}</td>
                    ] ;
                }    
-                
+               
               return (
                     <tr >
                       {fields}
@@ -155,14 +153,14 @@ import React from 'react';
                    ) ; 
           }
     }
- 
+
     class ContactList extends React.Component {
       render() {
          let contactRows =   this.props.contacts.map( (c) => {
               return <Contact key={c.phone_number} contact={c} 
                     updateHandler={this.props.updateHandler} 
                     deleteHandler={this.props.deleteHandler}
-                      
+                     
                     /> ; // CHANGE 
               });
           return (
@@ -173,7 +171,7 @@ import React from 'react';
             ) ;
         }
     }
- 
+
     class ContactsTable extends React.Component {
       render() {
           return (
@@ -187,7 +185,7 @@ import React from 'react';
             );
       }
     }
- 
+
    class ContactsApp extends React.Component {
        componentDidMount() {
          request.get('http://localhost:3000/api/contacts')
@@ -215,6 +213,14 @@ import React from 'react';
              }
            });  
     };
+
+
+
+
+
+
+
+
        deleteContact = (k) => {
         request
           .del('http://localhost:3000/api/contacts/' + k)
@@ -227,7 +233,7 @@ import React from 'react';
                } 
           });
     };
-          
+         
          addContact = (n, a, p) => {
         request
            .post('http://localhost:3000/api/contacts')
@@ -246,7 +252,7 @@ import React from 'react';
             } ); 
     };
         render() {
-        var contacts = api.getAll() ;   
+        var contacts = api.getAll() ;    // NEW
           return (
                 <div>
                    <h1> Contact List</h1>
@@ -258,5 +264,5 @@ import React from 'react';
           );
       }
     }
- 
+
     export default ContactsApp;
